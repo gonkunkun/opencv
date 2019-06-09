@@ -183,7 +183,8 @@ for tclass in classes:
     for file in files:
         # 集めた画像データから顔が検知されたら、切り取り、保存する。
         if os.path.isfile(file):
-            print("["+str(count)+"/"+str(len(files))+"] " + file)
+            if (count % 100) == 0:
+                print("["+str(count)+"/"+str(len(files))+"] " + file)
 
             img = cv2.imread(file)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -191,7 +192,7 @@ for tclass in classes:
                 gray, scaleFactor=FLAGS.scale, minNeighbors=FLAGS.neighbors, minSize=(FLAGS.min, FLAGS.min))
 
             if len(faces) > 0:
-                print("\tDetected face count: ", len(faces))
+                # print("\tDetected face count: ", len(faces))
 
                 largest_face = get_largest_face(faces)
 
@@ -220,17 +221,21 @@ for tclass in classes:
                 # 切り取った画像出力
                 filename = file.split("/")[-1]
                 cv2.imwrite(output_class_path + filename, cropped_img)
-                print("\tSucceed: saved face image")
+                # print("\tSucceed: saved face image")
                 face_detect_count = face_detect_count + 1
 
                 # 検出できたファイルは移動
                 if FLAGS.move_img:
-                    shutil.move(file,
-                                success_path)
+                    # 既にファイルが存在する場合には無視
+                    success_img_path = success_path + \
+                        "/" + os.path.basename(file)
+                    if not os.path.exists(success_img_path):
+                        shutil.move(file,
+                                    success_path)
 
             else:
                 f.writelines(file+"\n")
-                print("\tError: Not found face")
+                # print("\tError: Not found face")
                 # 移動
                 # if FLAGS.move_img:
                 #     shutil.move(file,
